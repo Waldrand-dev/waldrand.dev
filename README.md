@@ -4,6 +4,8 @@
 
 # waldrand.dev
 
+**[waldrand.dev](https://waldrand.dev)**
+
 The site for the waldrand.dev API surface: four free, keyless `GET` endpoints.
 All four are **in build** — the site says so plainly rather than showing a green
 tick for something that does not answer yet.
@@ -38,7 +40,7 @@ npm run typecheck
 ```
 
 There is no server. `next build` writes plain HTML into `out/`, which is what
-GitHub Pages serves.
+Cloudflare serves.
 
 ## Layout
 
@@ -76,13 +78,23 @@ in `app/globals.css` under `@theme`.
 
 ## Deploy
 
-Every push to `main` builds and publishes to GitHub Pages via
-`.github/workflows/deploy.yml`.
+[waldrand.dev](https://waldrand.dev) runs on Cloudflare Workers as static
+assets. Every push to `main` builds the export and deploys it:
 
-The site works both at the apex domain and under the Pages project path:
-`actions/configure-pages` hands the right prefix to the build through
-`NEXT_PUBLIC_BASE_PATH`. For the custom domain, point `waldrand.dev` at Pages
-and set it under **Settings → Pages → Custom domain**.
+```sh
+npm run build      # writes out/
+npm run deploy     # wrangler deploy
+```
+
+`wrangler.jsonc` is an assets-only Worker — no `main`, no server code, just
+`out/` uploaded and served. Two details in it are load-bearing:
+`html_handling: "auto-trailing-slash"` matches `trailingSlash: true` so `/docs`
+redirects to `/docs/`, and `not_found_handling: "404-page"` serves the exported
+`404.html`.
+
+Committing that config is also what keeps `wrangler deploy` from running its
+framework auto-detection, which spots Next.js, installs the OpenNext adapter
+and then fails looking for the server build a static export never produces.
 
 ## Licence
 

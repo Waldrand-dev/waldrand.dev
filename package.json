@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "deploy": "wrangler deploy",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"
@@ -23,8 +24,9 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "4.132.0"
   },
-  "description": "waldrand.dev \u2014 the API surface site. Next.js, TypeScript, Tailwind, statically exported.",
+  "description": "waldrand.dev — the API surface site. Next.js, TypeScript, Tailwind, statically exported.",
   "license": "MIT"
 }

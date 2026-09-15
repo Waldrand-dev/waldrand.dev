@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "waldrand-dev",
+  "compatibility_date": "2026-09-15",
+
+  // There is no `main`: this Worker serves nothing but the static export in
+  // `out/`. Committing this file is also what stops `wrangler deploy` from
+  // running its framework auto-detection, which sees Next.js, installs the
+  // OpenNext adapter and then fails looking for the server build that
+  // `output: "export"` never produces.
+  "assets": {
+    "directory": "./out",
+
+    // `next.config.ts` sets `trailingSlash: true`, so every route is a
+    // directory with an `index.html`. The default auto-trailing-slash
+    // handling redirects `/docs` to `/docs/` and serves that file.
+    "html_handling": "auto-trailing-slash",
+
+    // Serve the exported `out/404.html` for anything unmatched.
+    "not_found_handling": "404-page"
+  },
+
+  "observability": { "enabled": true }
+}
