@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+/* waldrand.dev — design tokens.
+   Palette and type follow public/assets/logo/BRAND.md: ink ground, paper text,
+   and the accent reserved for the threshold line and single points of stress. */
+@theme {
+  --color-ink: #12100e;
+  --color-paper: #efece4;
+  --color-accent: #e8552f;
+
+  /* surfaces, derived from ink */
+  --color-surface: #12100e;
+  --color-surface-2: #17140f;
+  --color-surface-3: #1d1914;
+  --color-hairline: #2a251e;
+  --color-hairline-soft: #201c17;
+
+  /* text */
+  --color-fg: #efece4;
+  --color-fg-dim: #a8a196;
+  --color-fg-faint: #6e675d;
+
+  --font-display: var(--font-archivo), "Helvetica Neue", Helvetica, sans-serif;
+  --font-sans: var(--font-plex-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* the measure every band lines its content up on */
+  --measure: 1180px;
+}
+
+/* Full-bleed bars keep their background and rules edge to edge while their
+   content sits on the shared measure. */
+@utility edge {
+  padding-inline: max(20px, calc((100% - var(--measure)) / 2));
+}
+
+@layer base {
+  html {
+    background: var(--color-surface);
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
+/* The threshold line travels bottom to top and fades at both edges — the
+   loading state from the brand set. */
+@keyframes wr-sweep {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
+}
+
+@layer components {
+  .wr-sweep {
+    animation: wr-sweep 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  .wr-ridge {
+    opacity: 0.3;
+  }
+
+  /* Pending uptime slots are hatched rather than left blank: an empty bar
+     still reads as a verdict, and nothing has been measured yet. */
+  .wr-pending {
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--color-surface-3) 0 3px,
+      transparent 3px 6px
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wr-sweep {
+    animation: none;
+  }
+  .wr-ridge {
+    opacity: 1;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
