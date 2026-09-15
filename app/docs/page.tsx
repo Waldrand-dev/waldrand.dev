@@ -43,6 +43,7 @@ export default function DocsPage() {
         <div className="mt-7 grid gap-4.5 md:grid-cols-2">
           {endpoints.map((endpoint) => {
             const copy = t.docs.endpoints[endpoint.id];
+            const live = endpoint.state === "live";
             return (
               <article
                 key={endpoint.id}
@@ -53,8 +54,14 @@ export default function DocsPage() {
                   <h3 className="font-mono text-[15px] font-semibold tracking-tight">
                     {endpoint.host}
                   </h3>
-                  <span className="rounded-full border border-accent/45 px-2.5 py-0.5 font-mono text-[11px] tracking-[0.1em] whitespace-nowrap text-accent uppercase">
-                    {t.common.stateSoon}
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 font-mono text-[11px] tracking-[0.1em] whitespace-nowrap uppercase ${
+                      live
+                        ? "border border-fg/25 text-fg"
+                        : "border border-accent/45 text-accent"
+                    }`}
+                  >
+                    {live ? t.common.stateLive : t.common.stateSoon}
                   </span>
                 </div>
 
@@ -72,9 +79,18 @@ export default function DocsPage() {
                   {copy.params}
                 </p>
 
-                <p className="mt-3 font-mono text-[11px] tracking-[0.08em] text-fg-faint uppercase">
-                  {t.docs.notLive}
-                </p>
+                {live ? (
+                  <a
+                    className="mt-3 inline-block font-mono text-[11px] tracking-[0.08em] text-fg-faint uppercase transition-colors hover:text-fg"
+                    href={`https://${endpoint.host}/`}
+                  >
+                    {t.docs.endpointDocs}
+                  </a>
+                ) : (
+                  <p className="mt-3 font-mono text-[11px] tracking-[0.08em] text-fg-faint uppercase">
+                    {t.docs.notLive}
+                  </p>
+                )}
               </article>
             );
           })}

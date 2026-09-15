@@ -112,6 +112,7 @@ const en = {
     params: "Parameters",
     exampleH2: "Example",
     notLive: "Not live yet — shape settled, implementation to follow.",
+    endpointDocs: "Full reference ↗",
     endpoints: {
       avatar: {
         desc: "Returns a deterministic avatar for any seed. The same seed gives the same SVG forever — good for placeholder profile pictures, commit authors, seats in a demo.",
@@ -281,6 +282,7 @@ const de: Copy = {
     params: "Parameter",
     exampleH2: "Beispiel",
     notLive: "Noch nicht live — Form steht, Implementierung folgt.",
+    endpointDocs: "Volle Referenz ↗",
     endpoints: {
       avatar: {
         desc: "Gibt einen deterministischen Avatar für einen beliebigen Seed zurück. Derselbe Seed liefert für immer dasselbe SVG — geeignet für Platzhalter-Profilbilder, Commit-Autoren, Sitzplätze in Demos.",

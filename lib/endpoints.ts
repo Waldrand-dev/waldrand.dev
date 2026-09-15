@@ -31,8 +31,10 @@ export const endpoints: readonly Endpoint[] = [
     path: "/{seed}.svg",
     method: "GET",
     contentType: "image/svg+xml",
-    state: "soon",
-    p50: null,
+    state: "live",
+    // Service time, measured in the container. An SVG is a few hundred bytes
+    // of geometry off a hash, so the wire is the slow part, not the render.
+    p50: 1,
   },
   {
     id: "image",
