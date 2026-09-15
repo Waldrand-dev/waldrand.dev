@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="152" height="24" viewBox="0 0 152 24" fill="none">
+  <rect width="152" height="24" rx="3" fill="#12100E"></rect>
+  <rect x="78" width="74" height="24" rx="3" fill="#E8552F"></rect>
+  <rect x="78" width="8" height="24" fill="#E8552F"></rect>
+  <text x="12" y="16.5" font-family="'IBM Plex Sans', sans-serif" font-weight="500" font-size="11" fill="#EFECE4">waldrand</text>
+  <text x="90" y="16.5" font-family="'IBM Plex Sans', sans-serif" font-weight="600" font-size="11" fill="#12100E">v1 · live</text>
+</svg>

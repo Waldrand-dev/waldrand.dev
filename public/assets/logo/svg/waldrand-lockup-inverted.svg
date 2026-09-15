@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="330" height="76" viewBox="0 0 330 76" fill="none">
+  <rect width="76" height="76" rx="17.8" fill="#EFECE4"></rect>
+  <g transform="scale(1.1875)">
+    <path d="M9 49 L22 27 L31 38 L43 19 L55 49 Z" fill="#12100E"></path>
+    <rect x="9" y="25.5" width="46" height="3" fill="#E8552F"></rect>
+  </g>
+  <text x="98" y="52" font-family="Archivo, sans-serif" font-weight="800" font-size="42" letter-spacing="-1.9" fill="#EFECE4">waldrand<tspan fill="#6B665C">.dev</tspan></text>
+</svg>
