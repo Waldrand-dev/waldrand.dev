@@ -34,6 +34,8 @@ interface HistoryRow {
 }
 
 const CHECK_TIMEOUT_MS = 10_000;
+/** Older than this, `/api/status` runs a check itself instead of trusting the cron. */
+const STALE_AFTER_MS = 2 * 60 * 1000;
 
 function classifyResponse(status: number): MonitorState {
   if (status >= 200 && status < 300) return "operational";
@@ -114,7 +116,7 @@ async function checkLiveEndpoints(env: Env) {
   ).run();
 }
 
-async function statusResponse(env: Env) {
+async function readStatus(env: Env): Promise<StatusResponse> {
   const [latestRows, historyRows] = await Promise.all([
     env.DB.prepare(
       "SELECT endpoint_id, state, http_status, checked_at FROM endpoint_checks ORDER BY endpoint_id",
@@ -141,6 +143,17 @@ async function statusResponse(env: Env) {
       checkedAt: row.checked_at,
     })),
   };
+
+  return body;
+}
+
+async function statusResponse(env: Env) {
+  let body = await readStatus(env);
+  const lastCheck = body.checkedAt ? Date.parse(body.checkedAt) : 0;
+  if (Date.now() - lastCheck > STALE_AFTER_MS) {
+    await checkLiveEndpoints(env);
+    body = await readStatus(env);
+  }
 
   return new Response(JSON.stringify(body), {
     headers: {

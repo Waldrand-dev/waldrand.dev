@@ -13,10 +13,14 @@ export default function StatusPage() {
   useDocumentTitle(t.status.title);
 
   useEffect(() => {
-    fetch("/api/status")
-      .then((response) => (response.ok ? response.json() : Promise.reject()))
-      .then((value: StatusResponse) => setStatus(value))
-      .catch(() => setStatus(null));
+    const load = () =>
+      fetch("/api/status", { cache: "no-store" })
+        .then((response) => (response.ok ? response.json() : Promise.reject()))
+        .then((value: StatusResponse) => setStatus(value))
+        .catch(() => {});
+    load();
+    const interval = setInterval(load, 60_000);
+    return () => clearInterval(interval);
   }, []);
 
   const liveStates = status?.latest ?? [];
