@@ -1,7 +1,7 @@
 "use client";
 
 import { StatePill } from "@/components/state-pill";
-import { endpoints } from "@/lib/endpoints";
+import { endpoints, originOf } from "@/lib/endpoints";
 import { useCopy } from "@/lib/i18n";
 
 /** Dims the `{seed}` parts of a path so the literal segments read first. */
@@ -30,7 +30,6 @@ export function EndpointsTable() {
             <th className={head}>{t.index.thMethod}</th>
             <th className={head}>{t.index.thPath}</th>
             <th className={head}>{t.index.thType}</th>
-            <th className={head}>{t.index.thP50}</th>
             <th className={head}>{t.index.thState}</th>
           </tr>
         </thead>
@@ -46,16 +45,25 @@ export function EndpointsTable() {
                 <td
                   className={`px-4.5 py-4.5 ${live ? "font-medium text-accent" : "text-fg-faint"}`}
                 >
-                  {endpoint.method}
+                  {/* Planned hosts do not resolve yet, so only a live row links. */}
+                  {live ? (
+                    <a
+                      href={originOf(endpoint)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:underline"
+                    >
+                      {endpoint.method}
+                    </a>
+                  ) : (
+                    endpoint.method
+                  )}
                 </td>
                 <td className={`px-4.5 py-4.5 ${live ? "text-fg" : "text-fg-faint"}`}>
                   {endpoint.host}
                   {renderPath(endpoint.path)}
                 </td>
                 <td className="px-4.5 py-4.5 text-fg-dim">{endpoint.contentType}</td>
-                <td className="px-4.5 py-4.5 text-fg-dim">
-                  {endpoint.p50 === null ? "—" : `${endpoint.p50}ms`}
-                </td>
                 <td className="px-4.5 py-4.5">
                   <StatePill state={endpoint.state} />
                 </td>

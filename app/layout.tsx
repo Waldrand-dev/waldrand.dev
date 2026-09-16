@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     template: "%s — waldrand.dev",
   },
   description:
-    "Four free, keyless GET endpoints: avatars, placeholder images, QR codes and colour palettes. No account, no token, 60 requests a minute per IP.",
+    "Free, keyless GET endpoints: avatars today, with placeholder images, QR codes and colour palettes planned. No account, no token.",
   applicationName: "waldrand.dev",
   manifest: asset("/site.webmanifest"),
   icons: {
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "waldrand.dev",
     title: "waldrand.dev — api surface",
-    description: "Four free, keyless GET endpoints. No account, no token.",
+    description: "Free, keyless GET endpoints. No account, no token.",
     images: ["/assets/logo/png/og-image-1200x630.png"],
   },
   twitter: { card: "summary_large_image" },

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "status",
   description:
-    "Operational status for the waldrand.dev endpoints. All four are in build.",
+    "Operational status for the waldrand.dev endpoints, checked every minute.",
 };
 
 export default function StatusLayout({ children }: { children: ReactNode }) {

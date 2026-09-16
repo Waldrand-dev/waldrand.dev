@@ -6,9 +6,9 @@
 
 **[waldrand.dev](https://waldrand.dev)**
 
-The site for the waldrand.dev API surface: four free, keyless `GET` endpoints.
-All four are **in build** — the site says so plainly rather than showing a green
-tick for something that does not answer yet.
+The site for the waldrand.dev API surface: free, keyless `GET` endpoints.
+`avatar` is **live**; the rest are **planned** — the site says so plainly rather
+than showing a green tick for something that does not answer yet.
 
 Next.js (App Router) · TypeScript · Tailwind CSS v4 · statically exported.
 
@@ -16,17 +16,18 @@ Next.js (App Router) · TypeScript · Tailwind CSS v4 · statically exported.
 
 | Endpoint | Returns | State |
 | --- | --- | --- |
-| `avatar.waldrand.dev/{seed}.svg` | `image/svg+xml` | soon |
+| `avatar.waldrand.dev/{seed}.svg` | `image/svg+xml` | live |
 | `image.waldrand.dev/{w}x{h}` | `image/webp` | soon |
 | `qr.waldrand.dev/{data}.svg` | `image/svg+xml` | soon |
 | `color.waldrand.dev/palette` | `application/json` | soon |
 
-`lib/endpoints.ts` is the single source of truth. The table on the front page
-and the uptime rows on the status page both render from it, so flipping an
-endpoint to live is one edit:
+`lib/endpoints.ts` is the single source of truth. The table on the front page,
+the live/planned note above it, the endpoint counts and the uptime rows on the
+status page all render from it, so flipping an endpoint to live is one edit.
+`host` is a bare hostname; `originOf()` is the only place a scheme is added:
 
 ```ts
-{ id: "avatar", …, state: "live", p50: 14 }
+{ id: "avatar", …, state: "live" }
 ```
 
 ## Develop
@@ -39,8 +40,9 @@ npm run lint
 npm run typecheck
 ```
 
-There is no server. `next build` writes plain HTML into `out/`, which is what
-Cloudflare serves.
+`next build` writes plain HTML into `out/`. The Cloudflare Worker serves those
+assets and exposes `/api/status`; its scheduled handler checks live APIs and
+stores the latest result plus 48 hours of history in D1.
 
 ## Layout
 
@@ -86,15 +88,32 @@ npm run build      # writes out/
 npm run deploy     # wrangler deploy
 ```
 
-`wrangler.jsonc` is an assets-only Worker — no `main`, no server code, just
-`out/` uploaded and served. Two details in it are load-bearing:
+`wrangler.jsonc` configures the Worker, its asset binding, D1 database, and a
+once-per-minute cron trigger. Two details in it are load-bearing:
 `html_handling: "auto-trailing-slash"` matches `trailingSlash: true` so `/docs`
 redirects to `/docs/`, and `not_found_handling: "404-page"` serves the exported
 `404.html`.
 
-Committing that config is also what keeps `wrangler deploy` from running its
-framework auto-detection, which spots Next.js, installs the OpenNext adapter
-and then fails looking for the server build a static export never produces.
+### Worker setup
+
+Create the D1 database once and copy the returned ID into
+`wrangler.jsonc`, replacing `REPLACE_WITH_D1_DATABASE_ID`:
+
+```sh
+npx wrangler d1 create waldrand-status
+```
+
+Apply the schema remotely, build the static site, and deploy the Worker:
+
+```sh
+npx wrangler d1 migrations apply waldrand-status --remote
+npm run build
+npx wrangler deploy
+```
+
+After deployment, the first scheduled check runs within a minute. The status
+page reads the cached result from `/api/status`; it never probes the APIs from
+each visitor's browser, so page traffic cannot consume the API rate limit.
 
 ## Licence
 

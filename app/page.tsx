@@ -1,5 +1,6 @@
 "use client";
 
+import { AvatarPlayground } from "@/components/avatar-playground";
 import { EndpointsTable } from "@/components/endpoints-table";
 import { Command, Output } from "@/components/terminal";
 import { useCopy, useDocumentTitle } from "@/lib/i18n";
@@ -25,18 +26,20 @@ export default function ApiSurfacePage() {
 
       <EndpointsTable />
 
+      <AvatarPlayground />
+
       <div className="grid items-end gap-10 lg:grid-cols-[1fr_auto]">
         <section>
-          <Command>curl -I avatar.waldrand.dev/ada.svg</Command>
+          <Command>curl -I https://avatar.waldrand.dev/ada.svg</Command>
           <Output>
             {"HTTP/2 "}
             <b>200</b>
             {"\nx-ratelimit-limit: "}
             <b>60</b>
             {"\nx-ratelimit-remaining: "}
-            <b>59</b>
+            <b>239</b>
             {"\ncache-control: "}
-            <b>public, max-age=31536000</b>
+            <b>public, max-age=2592000, immutable</b>
           </Output>
           <p className="mt-3.5 font-mono text-[13.5px] text-fg-faint">
             {t.index.curlNote}

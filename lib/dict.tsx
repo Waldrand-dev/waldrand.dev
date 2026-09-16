@@ -1,6 +1,11 @@
 import type { ReactNode } from "react";
 
-import type { Endpoint } from "@/lib/endpoints";
+import {
+  endpoints,
+  liveEndpoints,
+  plannedEndpoints,
+  type Endpoint,
+} from "@/lib/endpoints";
 
 export const LANGS = ["en", "de"] as const;
 export type Lang = (typeof LANGS)[number];
@@ -15,6 +20,18 @@ const C = ({ children }: { children: ReactNode }) => (
   </code>
 );
 
+/** Hostnames in prose, joined the way each language joins a list. */
+const hosts = (list: readonly Endpoint[], lang: Lang): ReactNode => {
+  const parts = new Intl.ListFormat(lang, { type: "conjunction" }).formatToParts(
+    list.map((e) => e.host),
+  );
+  return parts.map((part, i) =>
+    part.type === "element" ? <C key={i}>{part.value}</C> : part.value,
+  );
+};
+
+const total = endpoints.length;
+
 const en = {
   common: {
     brandSub: "— api surface",
@@ -22,8 +39,8 @@ const en = {
     navDocs: "[docs]",
     navStatus: "[status]",
     loading: "loading",
-    stateSoon: "soon",
-    stateLive: "200",
+    stateSoon: "planned",
+    stateLive: "online",
     footBuilt: "built at the forest edge",
     footSource: "source",
     footIssues: "issues",
@@ -34,18 +51,31 @@ const en = {
   index: {
     title: "waldrand.dev — api surface",
     description:
-      "Four free, keyless GET endpoints: avatars, placeholder images, QR codes and colour palettes. No account, no token, 60 requests a minute per IP.",
+      "Free, keyless GET endpoints: avatars today, with placeholder images, QR codes and colour palettes planned. No account, no token.",
     command: "waldrand ls --free",
-    h1: "4 endpoints. 0 keys. 0 €.",
+    h1: `${total} endpoints. 0 keys. 0 €.`,
     lede: "Everything here is a GET away. Rate limiting is per IP at 60/min — no account to create, nothing to forget to rotate.",
-    buildNote:
-      "All four are in build right now. Nothing is live yet — what's below is the shape that ships.",
+    buildNote: (
+      <>
+        {liveEndpoints.length === 0
+          ? "Nothing is live yet. "
+          : <>{hosts(liveEndpoints, "en")} {liveEndpoints.length === 1 ? "is" : "are"} live now. </>}
+        {plannedEndpoints.length === 0
+          ? `All ${total} are live.`
+          : <>{hosts(plannedEndpoints, "en")} {plannedEndpoints.length === 1 ? "is" : "are"} planned — the shape below is settled, the implementation follows.</>}
+      </>
+    ),
     thMethod: "Method",
     thPath: "Host / Path",
     thType: "Content-Type",
-    thP50: "p50",
     thState: "State",
-    curlNote: "Planned response — the endpoint is not live yet.",
+    curlNote: "Any string works as a seed, and the same seed always returns the same image — so the URL is all you store.",
+    playCommand: "waldrand try avatar",
+    playLabel: "Seed",
+    playPlaceholder: "type anything",
+    playCopy: "copy",
+    playCopied: "copied",
+    playAlt: "Avatar for",
     pitchLine: "Own a use case I haven't built?",
     pitchCta: "open an issue →",
   },
@@ -53,10 +83,10 @@ const en = {
   docs: {
     title: "waldrand.dev — docs",
     description:
-      "Request shapes, parameters and headers for the four waldrand.dev endpoints.",
+      "Request shapes, parameters and headers for the waldrand.dev endpoints.",
     command: "waldrand docs",
-    h1: "Four endpoints, one rule: GET and go.",
-    lede: "No auth, no SDKs, no sign-up. Every route answers a bare GET and caches. The docs are here already because the shape is settled — the implementation is what's next.",
+    h1: `${total} endpoints, one rule: GET and go.`,
+    lede: "No auth, no SDKs, no sign-up. Every route answers a bare GET and caches. Planned endpoints are documented already because their shape is settled — the implementation is what's next.",
     commonH2: "Common behaviour",
     rows: [
       { term: "Authentication", body: <>None. There are no keys, no tokens, no account.</> },
@@ -64,9 +94,11 @@ const en = {
         term: "Rate limit",
         body: (
           <>
-            60 requests per minute per IP. Every response carries{" "}
-            <C>x-ratelimit-limit</C> and <C>x-ratelimit-remaining</C>; going over
-            returns 429 with <C>retry-after</C>.
+            60 requests per minute per IP, with bursts of up to 240 so a page
+            full of avatars loads in one go. Only fresh renders count: a{" "}
+            <C>304</C> or a response served from cache is free. Every response
+            carries <C>x-ratelimit-limit</C> and <C>x-ratelimit-remaining</C>;
+            going over returns 429 with <C>retry-after</C>.
           </>
         ),
       },
@@ -156,18 +188,26 @@ const en = {
   status: {
     title: "waldrand.dev — status",
     description:
-      "Operational status for the waldrand.dev endpoints. All four are in build.",
+      "Operational status for the waldrand.dev endpoints, checked every minute.",
     command: "waldrand status",
-    h1: "Nothing is down. Nothing is up.",
-    lede: "All four endpoints are in build. This page shows no numbers while there is nothing to measure — no green tick for a service that does not answer yet.",
-    line: "all systems in build",
-    endpointCount: "4 endpoints",
+    h1: "The edge is being watched.",
+    lede: "Live endpoints are checked from the edge every minute. This page shows the latest result and the last 48 hours of checks.",
+    line: "monitoring live endpoints",
+    endpointCount: `${total} endpoints`,
     h2: "Endpoints",
-    legendPast: "48 days ago",
+    legendPast: "48 hours ago",
     legendToday: "today",
-    noData: "no data",
-    foot: "Once an endpoint goes live, real uptime appears here — measured from outside, every minute, never rounded up.",
+    noData: "awaiting first check",
+    foot: "Live endpoints are checked once a minute and retained here for 48 hours. Planned endpoints are not probed until they go live.",
     uptimeLabel: "No uptime data yet",
+    stateOperational: "operational",
+    stateDegraded: "degraded",
+    stateOffline: "offline",
+    statePlanned: "planned",
+    stateChecking: "checking",
+    overallOperational: "all monitored systems operational",
+    overallDegraded: "one or more systems degraded",
+    overallOffline: "one or more systems offline",
   },
 
   notFound: {
@@ -175,7 +215,7 @@ const en = {
     description: "No such route on waldrand.dev.",
     command: "waldrand get 404",
     h1: "No such route.",
-    lede: "Nothing handles this address. The four endpoints that will exist are on the front page.",
+    lede: "Nothing handles this address. Every endpoint, live and planned, is on the front page.",
     cta: "back to the api surface →",
   },
 };
@@ -189,8 +229,8 @@ const de: Copy = {
     navDocs: "[docs]",
     navStatus: "[status]",
     loading: "lädt",
-    stateSoon: "bald",
-    stateLive: "200",
+    stateSoon: "geplant",
+    stateLive: "online",
     footBuilt: "gebaut am Waldrand",
     footSource: "Quelltext",
     footIssues: "Issues",
@@ -201,18 +241,31 @@ const de: Copy = {
   index: {
     title: "waldrand.dev — API-Oberfläche",
     description:
-      "Vier freie, schlüssellose GET-Endpoints: Avatare, Platzhalterbilder, QR-Codes und Farbpaletten. Kein Account, kein Token, 60 Anfragen pro Minute und IP.",
+      "Freie, schlüssellose GET-Endpoints: Avatare schon heute, Platzhalterbilder, QR-Codes und Farbpaletten geplant. Kein Account, kein Token.",
     command: "waldrand ls --free",
-    h1: "4 Endpoints. 0 Keys. 0 €.",
+    h1: `${total} Endpoints. 0 Keys. 0 €.`,
     lede: "Alles hier ist ein GET entfernt. Rate-Limit pro IP bei 60/min — kein Account, den man anlegen, kein Schlüssel, den man rotieren muss.",
-    buildNote:
-      "Alle vier sind gerade im Bau. Noch ist nichts live — was unten steht, ist die Form, die ausgeliefert wird.",
+    buildNote: (
+      <>
+        {liveEndpoints.length === 0
+          ? "Noch ist nichts live. "
+          : <>{hosts(liveEndpoints, "de")} {liveEndpoints.length === 1 ? "ist" : "sind"} jetzt live. </>}
+        {plannedEndpoints.length === 0
+          ? `Alle ${total} sind live.`
+          : <>{hosts(plannedEndpoints, "de")} {plannedEndpoints.length === 1 ? "ist" : "sind"} geplant — die Form unten steht, die Implementierung folgt.</>}
+      </>
+    ),
     thMethod: "Methode",
     thPath: "Host / Pfad",
     thType: "Content-Type",
-    thP50: "p50",
     thState: "Status",
-    curlNote: "Geplante Antwort — der Endpoint ist noch nicht live.",
+    curlNote: "Jeder String taugt als Seed, und derselbe Seed liefert immer dasselbe Bild — gespeichert wird nur die URL.",
+    playCommand: "waldrand try avatar",
+    playLabel: "Seed",
+    playPlaceholder: "tippe irgendwas",
+    playCopy: "kopieren",
+    playCopied: "kopiert",
+    playAlt: "Avatar für",
     pitchLine: "Ein Anwendungsfall, den ich noch nicht gebaut habe?",
     pitchCta: "Issue eröffnen →",
   },
@@ -220,10 +273,10 @@ const de: Copy = {
   docs: {
     title: "waldrand.dev — Doku",
     description:
-      "Anfrageform, Parameter und Header der vier Endpoints von waldrand.dev.",
+      "Anfrageform, Parameter und Header der Endpoints von waldrand.dev.",
     command: "waldrand docs",
-    h1: "Vier Endpoints, eine Regel: GET und fertig.",
-    lede: "Keine Authentifizierung, keine SDKs, keine Registrierung. Jede Route antwortet auf ein blankes GET und lässt sich cachen. Die Doku steht schon, weil die Form feststeht — die Implementierung kommt als Nächstes.",
+    h1: `${total} Endpoints, eine Regel: GET und fertig.`,
+    lede: "Keine Authentifizierung, keine SDKs, keine Registrierung. Jede Route antwortet auf ein blankes GET und lässt sich cachen. Geplante Endpoints sind schon dokumentiert, weil ihre Form feststeht — die Implementierung kommt als Nächstes.",
     commonH2: "Gemeinsames Verhalten",
     rows: [
       {
@@ -234,9 +287,12 @@ const de: Copy = {
         term: "Rate-Limit",
         body: (
           <>
-            60 Anfragen pro Minute und IP. Jede Antwort trägt{" "}
-            <C>x-ratelimit-limit</C> und <C>x-ratelimit-remaining</C>; bei
-            Überschreitung kommt 429 mit <C>retry-after</C>.
+            60 Anfragen pro Minute und IP, mit Bursts bis 240, damit eine Seite
+            voller Avatare in einem Rutsch lädt. Es zählen nur frische
+            Renderings: ein <C>304</C> oder eine Antwort aus dem Cache ist frei.
+            Jede Antwort trägt <C>x-ratelimit-limit</C> und{" "}
+            <C>x-ratelimit-remaining</C>; bei Überschreitung kommt 429 mit{" "}
+            <C>retry-after</C>.
           </>
         ),
       },
@@ -326,18 +382,26 @@ const de: Copy = {
   status: {
     title: "waldrand.dev — Status",
     description:
-      "Betriebsstatus der Endpoints von waldrand.dev. Alle vier sind im Bau.",
+      "Betriebsstatus der Endpoints von waldrand.dev, minütlich geprüft.",
     command: "waldrand status",
-    h1: "Nichts ist unten. Nichts ist oben.",
-    lede: "Alle vier Endpoints sind im Bau. Diese Seite zeigt keine Messwerte, solange es nichts zu messen gibt — kein grünes Häkchen für einen Dienst, der noch nicht antwortet.",
-    line: "alle systeme im bau",
-    endpointCount: "4 Endpoints",
+    h1: "Der Rand wird beobachtet.",
+    lede: "Live-Endpoints werden minütlich vom Rand aus geprüft. Diese Seite zeigt das letzte Ergebnis und die Prüfungen der vergangenen 48 Stunden.",
+    line: "live-Endpoints werden überwacht",
+    endpointCount: `${total} Endpoints`,
     h2: "Endpoints",
-    legendPast: "vor 48 Tagen",
+    legendPast: "vor 48 Stunden",
     legendToday: "heute",
-    noData: "keine Daten",
-    foot: "Sobald ein Endpoint live geht, erscheint hier echte Uptime — von außen gemessen, minütlich, ohne Rundung nach oben.",
+    noData: "warte auf erste Prüfung",
+    foot: "Live-Endpoints werden minütlich geprüft und 48 Stunden hier behalten. Geplante Endpoints werden erst beim Livegang geprüft.",
     uptimeLabel: "Noch keine Uptime-Daten",
+    stateOperational: "betriebsbereit",
+    stateDegraded: "eingeschränkt",
+    stateOffline: "offline",
+    statePlanned: "geplant",
+    stateChecking: "wird geprüft",
+    overallOperational: "alle überwachten Systeme betriebsbereit",
+    overallDegraded: "mindestens ein System ist eingeschränkt",
+    overallOffline: "mindestens ein System ist offline",
   },
 
   notFound: {
@@ -345,7 +409,7 @@ const de: Copy = {
     description: "Diese Route gibt es auf waldrand.dev nicht.",
     command: "waldrand get 404",
     h1: "Diese Route gibt es nicht.",
-    lede: "Kein Handler unter dieser Adresse. Die vier Endpoints, die es geben wird, stehen auf der Startseite.",
+    lede: "Kein Handler unter dieser Adresse. Alle Endpoints, live und geplant, stehen auf der Startseite.",
     cta: "zurück zur API-Oberfläche →",
   },
 };

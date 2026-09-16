@@ -1,7 +1,7 @@
 "use client";
 
 import { Command } from "@/components/terminal";
-import { endpoints } from "@/lib/endpoints";
+import { endpoints, originOf } from "@/lib/endpoints";
 import { useCopy, useDocumentTitle } from "@/lib/i18n";
 
 export default function DocsPage() {
@@ -82,7 +82,7 @@ export default function DocsPage() {
                 {live ? (
                   <a
                     className="mt-3 inline-block font-mono text-[11px] tracking-[0.08em] text-fg-faint uppercase transition-colors hover:text-fg"
-                    href={`https://${endpoint.host}/`}
+                    href={`${originOf(endpoint)}/`}
                   >
                     {t.docs.endpointDocs}
                   </a>
