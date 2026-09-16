@@ -37,8 +37,35 @@ function slotState(
   );
 }
 
+const MINUTE_MS = 60 * 1000;
+
+/**
+ * Share of monitored minutes in the window that were operational. Each minute
+ * with at least one check counts once, at its worst state; minutes with no
+ * check are left out rather than guessed.
+ */
+function uptimePercent(
+  endpointId: string,
+  history: StatusResponse["history"],
+): number | null {
+  const minutes = new Map<number, MonitorState>();
+  for (const point of history) {
+    if (point.endpointId !== endpointId) continue;
+    const minute = Math.floor(Date.parse(point.checkedAt) / MINUTE_MS);
+    const previous = minutes.get(minute);
+    if (!previous || statePriority[point.state] > statePriority[previous]) {
+      minutes.set(minute, point.state);
+    }
+  }
+  if (minutes.size === 0) return null;
+
+  let up = 0;
+  for (const state of minutes.values()) if (state === "operational") up++;
+  return (up / minutes.size) * 100;
+}
+
 function UptimeRow({ endpoint, status }: { endpoint: Endpoint; status: StatusResponse | null }) {
-  const { t } = useCopy();
+  const { lang, t } = useCopy();
   const live = endpoint.state === "live";
   const latest = status?.latest.find((item) => item.endpointId === endpoint.id);
   const stateLabel = !live
@@ -50,6 +77,7 @@ function UptimeRow({ endpoint, status }: { endpoint: Endpoint; status: StatusRes
         : latest?.state === "offline"
           ? t.status.stateOffline
           : t.status.stateChecking;
+  const uptime = live && status ? uptimePercent(endpoint.id, status.history) : null;
   const stateClass =
     latest?.state === "offline" || latest?.state === "degraded"
       ? "border-accent/45 text-accent"
@@ -99,7 +127,18 @@ function UptimeRow({ endpoint, status }: { endpoint: Endpoint; status: StatusRes
 
       <div className="flex justify-between gap-3 font-mono text-[11.5px] text-fg-faint">
         <span>{t.status.legendPast}</span>
-        <span className="text-accent">{live && status ? "" : t.status.noData}</span>
+        {uptime !== null ? (
+          <span className="text-fg-dim">
+            {t.status.uptime(
+              `${uptime.toLocaleString(lang, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}%`,
+            )}
+          </span>
+        ) : (
+          <span className="text-accent">{live && status ? "" : t.status.noData}</span>
+        )}
         <span>{t.status.legendToday}</span>
       </div>
     </article>
